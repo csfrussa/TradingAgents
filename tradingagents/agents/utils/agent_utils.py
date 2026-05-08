@@ -11,7 +11,8 @@ from tradingagents.agents.utils.fundamental_data_tools import (
     get_fundamentals,
     get_balance_sheet,
     get_cashflow,
-    get_income_statement
+    get_income_statement,
+    get_crypto_info,
 )
 from tradingagents.agents.utils.news_data_tools import (
     get_news,
@@ -36,6 +37,15 @@ def get_language_instruction() -> str:
 
 def build_instrument_context(ticker: str) -> str:
     """Describe the exact instrument so agents preserve exchange-qualified tickers."""
+    from tradingagents.dataflows.asset_detection import detect_asset_type
+    asset_type = detect_asset_type(ticker)
+    if asset_type == "crypto":
+        return (
+            f"The instrument to analyze is `{ticker}` (cryptocurrency). "
+            "Use this exact ticker in every tool call, report, and recommendation. "
+            "This asset trades 24/7 with no market hours, no circuit breakers, and "
+            "no traditional equity fundamentals (P/E, EPS, dividends do not apply)."
+        )
     return (
         f"The instrument to analyze is `{ticker}`. "
         "Use this exact ticker in every tool call, report, and recommendation, "

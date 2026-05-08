@@ -11,6 +11,7 @@ from tradingagents.dataflows.config import get_config
 def create_news_analyst(llm):
     def news_analyst_node(state):
         current_date = state["trade_date"]
+        asset_type = state.get("asset_type", "stock")
         instrument_context = build_instrument_context(state["company_of_interest"])
 
         tools = [
@@ -18,8 +19,21 @@ def create_news_analyst(llm):
             get_global_news,
         ]
 
+        crypto_note = ""
+        if asset_type == "crypto":
+            crypto_note = (
+                " Since this is a cryptocurrency, pay special attention to: "
+                "regulatory developments (SEC, CFTC, central bank decisions on crypto), "
+                "exchange-level events (listings, delistings, hacks, solvency concerns), "
+                "on-chain events (protocol upgrades, hard forks, halvings, large whale movements), "
+                "macroeconomic catalysts (interest rate decisions, risk-on/risk-off sentiment), "
+                "and community/social sentiment shifts. Explicitly note any news that could trigger "
+                "outsized price moves given the 24/7 nature and higher volatility of crypto markets."
+            )
+
         system_message = (
             "You are a news researcher tasked with analyzing recent news and trends over the past week. Please write a comprehensive report of the current state of the world that is relevant for trading and macroeconomics. Use the available tools: get_news(query, start_date, end_date) for company-specific or targeted news searches, and get_global_news(curr_date, look_back_days, limit) for broader macroeconomic news. Provide specific, actionable insights with supporting evidence to help traders make informed decisions."
+            + crypto_note
             + """ Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."""
             + get_language_instruction()
         )

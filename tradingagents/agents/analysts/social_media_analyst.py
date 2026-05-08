@@ -6,14 +6,33 @@ from tradingagents.dataflows.config import get_config
 def create_social_media_analyst(llm):
     def social_media_analyst_node(state):
         current_date = state["trade_date"]
+        asset_type = state.get("asset_type", "stock")
         instrument_context = build_instrument_context(state["company_of_interest"])
 
         tools = [
             get_news,
         ]
 
+        if asset_type == "crypto":
+            base_prompt = (
+                "You are a crypto sentiment and social media analyst tasked with assessing community sentiment "
+                "and social signals for a cryptocurrency over the past week. "
+                "Use the get_news(query, start_date, end_date) tool to search for relevant discussions. "
+                "Focus on: Twitter/X crypto influencer sentiment and trending narratives, Reddit communities "
+                "(r/CryptoCurrency, r/Bitcoin, r/ethereum, and coin-specific subreddits), Telegram and Discord "
+                "community tone, FUD vs. FOMO indicators, whale wallet activity mentions, developer activity "
+                "and GitHub commit sentiment, and any viral narratives that could drive short-term price action. "
+                "Identify whether community sentiment is broadly bullish, bearish, or uncertain, and explain the "
+                "dominant narratives driving that sentiment. Provide specific, actionable insights to help traders "
+                "interpret the social signal strength."
+            )
+        else:
+            base_prompt = (
+                "You are a social media and company specific news researcher/analyst tasked with analyzing social media posts, recent company news, and public sentiment for a specific company over the past week. You will be given a company's name your objective is to write a comprehensive long report detailing your analysis, insights, and implications for traders and investors on this company's current state after looking at social media and what people are saying about that company, analyzing sentiment data of what people feel each day about the company, and looking at recent company news. Use the get_news(query, start_date, end_date) tool to search for company-specific news and social media discussions. Try to look at all sources possible from social media to sentiment to news. Provide specific, actionable insights with supporting evidence to help traders make informed decisions."
+            )
+
         system_message = (
-            "You are a social media and company specific news researcher/analyst tasked with analyzing social media posts, recent company news, and public sentiment for a specific company over the past week. You will be given a company's name your objective is to write a comprehensive long report detailing your analysis, insights, and implications for traders and investors on this company's current state after looking at social media and what people are saying about that company, analyzing sentiment data of what people feel each day about the company, and looking at recent company news. Use the get_news(query, start_date, end_date) tool to search for company-specific news and social media discussions. Try to look at all sources possible from social media to sentiment to news. Provide specific, actionable insights with supporting evidence to help traders make informed decisions."
+            base_prompt
             + """ Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."""
             + get_language_instruction()
         )

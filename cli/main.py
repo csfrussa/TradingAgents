@@ -28,7 +28,6 @@ from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 from cli.models import AnalystType
 from cli.utils import *
-from cli.announcements import fetch_announcements, display_announcements
 from cli.stats_handler import StatsCallbackHandler
 
 console = Console()
@@ -487,9 +486,6 @@ def get_user_selections():
     console.print()
     console.print()  # Add vertical space before announcements
 
-    # Fetch and display announcements (silent on failure)
-    announcements = fetch_announcements()
-    display_announcements(console, announcements)
 
     # Create a boxed questionnaire for each step
     def create_question_box(title, prompt, default=None):
@@ -503,11 +499,26 @@ def get_user_selections():
     console.print(
         create_question_box(
             "Step 1: Ticker Symbol",
-            "Enter the exact ticker symbol to analyze, including exchange suffix when needed (examples: SPY, CNC.TO, 7203.T, 0700.HK)",
+            "Enter the exact ticker symbol to analyze. Stocks: SPY, CNC.TO, 7203.T, 0700.HK — Crypto: BTC, ETH-USD, SOL",
             "SPY",
         )
     )
     selected_ticker = get_ticker()
+
+    # Show crypto detection notice
+    from tradingagents.dataflows.asset_detection import detect_asset_type
+    if detect_asset_type(selected_ticker) == "crypto":
+        console.print(
+            Panel(
+                f"[bold cyan]Crypto asset detected:[/bold cyan] [green]{selected_ticker}[/green]\n"
+                "[dim]• Fundamentals Analyst will use crypto market data & tokenomics instead of financial statements.\n"
+                "• Market Analyst is aware of 24/7 trading and higher volatility thresholds.\n"
+                "• News & Social Analysts will focus on crypto-specific signals (regulatory, on-chain, community).[/dim]",
+                border_style="cyan",
+                padding=(0, 2),
+                title="Crypto Mode",
+            )
+        )
 
     # Step 2: Analysis date
     default_date = datetime.datetime.now().strftime("%Y-%m-%d")

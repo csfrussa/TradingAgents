@@ -23,6 +23,7 @@ from .alpha_vantage import (
     get_global_news as get_alpha_vantage_global_news,
 )
 from .alpha_vantage_common import AlphaVantageRateLimitError
+from .crypto_yfinance import get_crypto_info as get_crypto_yfinance_info
 
 # Configuration and routing logic
 from .config import get_config
@@ -57,12 +58,19 @@ TOOLS_CATEGORIES = {
             "get_global_news",
             "get_insider_transactions",
         ]
-    }
+    },
+    "crypto_data": {
+        "description": "Crypto market data and tokenomics",
+        "tools": [
+            "get_crypto_info",
+        ]
+    },
 }
 
 VENDOR_LIST = [
     "yfinance",
     "alpha_vantage",
+    "crypto_yfinance",
 ]
 
 # Mapping of methods to their vendor-specific implementations
@@ -106,6 +114,10 @@ VENDOR_METHODS = {
     "get_insider_transactions": {
         "alpha_vantage": get_alpha_vantage_insider_transactions,
         "yfinance": get_yfinance_insider_transactions,
+    },
+    # crypto_data
+    "get_crypto_info": {
+        "crypto_yfinance": get_crypto_yfinance_info,
     },
 }
 
