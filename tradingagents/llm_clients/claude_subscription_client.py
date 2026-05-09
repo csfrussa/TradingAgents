@@ -8,6 +8,7 @@ import asyncio
 import concurrent.futures
 import json
 import re
+import time
 import uuid
 from typing import Any, Iterator, List, Optional, Sequence
 
@@ -114,11 +115,16 @@ def _parse_tool_calls(text: str) -> tuple[list[dict], str]:
 
 
 def _sdk_query(prompt: str, system_prompt: str, model: Optional[str]) -> str:
-    """Run a single-turn query via the Claude Code SDK in a fresh event loop."""
+    """Run a single-turn query via the Claude Code SDK in a fresh event loop.
+
+    Catches all ClaudeSDKError subclasses so that:
+    - rate_limit_event (MessageParseError) doesn't crash if we already have text
+    - ProcessError (exit code 1) surfaces a clear message instead of a traceback
+    """
 
     async def _run():
         from claude_code_sdk import AssistantMessage, ClaudeCodeOptions, TextBlock, query
-        from claude_code_sdk._errors import MessageParseError
+        from claude_code_sdk._errors import ClaudeSDKError, MessageParseError, ProcessError
 
         text = ""
         opts = ClaudeCodeOptions(
@@ -132,10 +138,27 @@ def _sdk_query(prompt: str, system_prompt: str, model: Optional[str]) -> str:
                     for block in msg.content:
                         if isinstance(block, TextBlock):
                             text += block.text
+        except ProcessError as e:
+            if text:
+                # Got a response before the process exited unexpectedly — use it.
+                pass
+            else:
+                raise RuntimeError(
+                    f"Claude subscription process exited with code {e.exit_code}. "
+                    f"This usually means you are already in a Claude Code session that is "
+                    f"consuming your subscription quota, or you hit a rate limit. "
+                    f"Wait a moment and retry, or use a different provider.\n"
+                    f"SDK stderr: {e.stderr or '(none)'}"
+                ) from e
         except MessageParseError:
-            # SDK doesn't recognise all server message types (e.g. rate_limit_event).
-            # Any assistant text collected before the unknown message is still usable.
+            # Unknown server event (e.g. rate_limit_event) — safe to ignore if we
+            # already have text; if not, the empty-string check below will surface it.
             pass
+        except ClaudeSDKError as e:
+            if not text:
+                raise RuntimeError(
+                    f"Claude Code SDK error: {type(e).__name__}: {e}"
+                ) from e
         return text
 
     def _in_thread():
@@ -146,8 +169,36 @@ def _sdk_query(prompt: str, system_prompt: str, model: Optional[str]) -> str:
         finally:
             loop.close()
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-        return pool.submit(_in_thread).result()
+    # Retry up to 3 times with exponential backoff on empty response (rate limit).
+    last_error: Optional[Exception] = None
+    for attempt in range(3):
+        if attempt > 0:
+            wait = 15 * (2 ** (attempt - 1))  # 15s, 30s
+            print(f"[claude_subscription] Rate limited — retrying in {wait}s (attempt {attempt + 1}/3)...")
+            time.sleep(wait)
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                result = pool.submit(_in_thread).result()
+            if result:
+                return result
+        except RuntimeError as e:
+            last_error = e
+            if "exit code" in str(e) or "rate limit" in str(e).lower():
+                continue
+            raise
+
+    if last_error:
+        raise last_error
+    raise RuntimeError(
+        "Claude subscription returned an empty response after 3 attempts.\n"
+        "Possible causes:\n"
+        "  1. Rate limit: you are already in an active Claude Code session that "
+        "shares the same subscription quota. Close other Claude Code sessions or "
+        "wait a moment and retry.\n"
+        "  2. The claude CLI process exited before sending a response (check "
+        "that `claude --version` works in your terminal).\n"
+        "Alternatively, switch to the 'Anthropic (API key)' provider."
+    )
 
 
 class ClaudeSubscriptionChatModel(BaseChatModel):
@@ -175,12 +226,6 @@ class ClaudeSubscriptionChatModel(BaseChatModel):
         system_prompt, user_prompt = _fmt_messages(messages, tools)
 
         raw = _sdk_query(user_prompt, system_prompt, self.model)
-
-        if not raw:
-            raise RuntimeError(
-                "Claude subscription returned an empty response. "
-                "This usually means you hit a rate limit — wait a moment and retry."
-            )
 
         tool_calls, clean_text = _parse_tool_calls(raw)
 
