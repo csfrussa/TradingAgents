@@ -499,15 +499,16 @@ def get_user_selections():
     console.print(
         create_question_box(
             "Step 1: Ticker Symbol",
-            "Enter the exact ticker symbol to analyze. Stocks: SPY, CNC.TO, 7203.T, 0700.HK — Crypto: BTC, ETH-USD, SOL",
+            "Enter the exact ticker symbol to analyze. Stocks: SPY, CNC.TO, 7203.T, 0700.HK — Crypto: BTC, ETH-USD, SOL — B3: PETR4, VALE3, ITUB4",
             "SPY",
         )
     )
     selected_ticker = get_ticker()
 
-    # Show crypto detection notice
+    # Show asset-type detection notice
     from tradingagents.dataflows.asset_detection import detect_asset_type
-    if detect_asset_type(selected_ticker) == "crypto":
+    _detected_type = detect_asset_type(selected_ticker)
+    if _detected_type == "crypto":
         console.print(
             Panel(
                 f"[bold cyan]Crypto asset detected:[/bold cyan] [green]{selected_ticker}[/green]\n"
@@ -517,6 +518,20 @@ def get_user_selections():
                 border_style="cyan",
                 padding=(0, 2),
                 title="Crypto Mode",
+            )
+        )
+    elif _detected_type == "b3":
+        console.print(
+            Panel(
+                f"[bold green]Ação B3 detectada:[/bold green] [yellow]{selected_ticker}[/yellow]\n"
+                "[dim]• Ticker normalizado para formato YFinance com sufixo .SA.\n"
+                "• Fundamentals Analyst usará métricas brasileiras (P/L, P/VP, DY, JCP, CVM).\n"
+                "• Market Analyst considera horário B3 (10h–17h BRT) e Ibovespa como benchmark.\n"
+                "• News Analyst buscará fatos relevantes CVM, SELIC, risco político/macro Brasil.\n"
+                "• Social Analyst focará em comunidades brasileiras e análise em Português.[/dim]",
+                border_style="green",
+                padding=(0, 2),
+                title="Modo B3",
             )
         )
 

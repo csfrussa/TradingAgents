@@ -8,7 +8,7 @@ from tradingagents.llm_clients.model_catalog import get_model_options
 
 console = Console()
 
-TICKER_INPUT_EXAMPLES = "Examples: SPY, CNC.TO, 7203.T, 0700.HK, BTC, ETH-USD, SOL"
+TICKER_INPUT_EXAMPLES = "Examples: SPY, CNC.TO, 7203.T, 0700.HK, BTC, ETH-USD, SOL, PETR4, VALE3, ITUB4"
 
 ANALYST_ORDER = [
     ("Market Analyst", AnalystType.MARKET),
@@ -39,11 +39,16 @@ def get_ticker() -> str:
 
 
 def normalize_ticker_symbol(ticker: str) -> str:
-    """Normalize ticker input, converting bare crypto symbols to YFinance format."""
-    from tradingagents.dataflows.asset_detection import detect_asset_type, normalize_crypto_ticker
+    """Normalize ticker input to YFinance format (crypto and B3 get suffixes appended)."""
+    from tradingagents.dataflows.asset_detection import (
+        detect_asset_type, normalize_crypto_ticker, normalize_b3_ticker
+    )
     ticker = ticker.strip().upper()
-    if detect_asset_type(ticker) == "crypto":
+    asset_type = detect_asset_type(ticker)
+    if asset_type == "crypto":
         return normalize_crypto_ticker(ticker)
+    if asset_type == "b3":
+        return normalize_b3_ticker(ticker)
     return ticker
 
 

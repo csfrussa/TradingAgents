@@ -19,7 +19,7 @@ from tradingagents.agents import *
 from tradingagents.default_config import DEFAULT_CONFIG
 from tradingagents.agents.utils.memory import TradingMemoryLog
 from tradingagents.dataflows.utils import safe_ticker_component
-from tradingagents.dataflows.asset_detection import detect_asset_type, normalize_crypto_ticker
+from tradingagents.dataflows.asset_detection import detect_asset_type, normalize_crypto_ticker, normalize_b3_ticker
 from tradingagents.agents.utils.agent_states import (
     AgentState,
     InvestDebateState,
@@ -39,6 +39,7 @@ from tradingagents.agents.utils.agent_utils import (
     get_insider_transactions,
     get_global_news,
     get_crypto_info,
+    get_b3_stock_info,
 )
 
 from .checkpointer import checkpoint_step, clear_checkpoint, get_checkpointer, thread_id
@@ -188,6 +189,8 @@ class TradingAgentsGraph:
                     get_income_statement,
                     # Crypto fundamentals — unused for stocks, activated by asset_type
                     get_crypto_info,
+                    # B3 fundamentals — unused for non-B3 assets, activated by asset_type
+                    get_b3_stock_info,
                 ]
             ),
         }
@@ -273,10 +276,12 @@ class TradingAgentsGraph:
         with a per-ticker SqliteSaver so a crashed run can resume from the last
         successful node on a subsequent invocation with the same ticker+date.
         """
-        # Detect asset type and normalize crypto tickers before anything else.
+        # Detect asset type and normalize tickers before anything else.
         asset_type = detect_asset_type(company_name)
         if asset_type == "crypto":
             company_name = normalize_crypto_ticker(company_name)
+        elif asset_type == "b3":
+            company_name = normalize_b3_ticker(company_name)
 
         self.ticker = company_name
 

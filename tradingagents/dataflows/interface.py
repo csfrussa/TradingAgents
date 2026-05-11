@@ -24,6 +24,7 @@ from .alpha_vantage import (
 )
 from .alpha_vantage_common import AlphaVantageRateLimitError
 from .crypto_yfinance import get_crypto_info as get_crypto_yfinance_info
+from .b3_yfinance import get_b3_stock_info as get_b3_yfinance_info
 
 # Configuration and routing logic
 from .config import get_config
@@ -65,12 +66,19 @@ TOOLS_CATEGORIES = {
             "get_crypto_info",
         ]
     },
+    "b3_data": {
+        "description": "B3 (Brazilian stock exchange) fundamental and market data",
+        "tools": [
+            "get_b3_stock_info",
+        ]
+    },
 }
 
 VENDOR_LIST = [
     "yfinance",
     "alpha_vantage",
     "crypto_yfinance",
+    "b3_yfinance",
 ]
 
 # Mapping of methods to their vendor-specific implementations
@@ -118,6 +126,10 @@ VENDOR_METHODS = {
     # crypto_data
     "get_crypto_info": {
         "crypto_yfinance": get_crypto_yfinance_info,
+    },
+    # b3_data
+    "get_b3_stock_info": {
+        "b3_yfinance": get_b3_yfinance_info,
     },
 }
 

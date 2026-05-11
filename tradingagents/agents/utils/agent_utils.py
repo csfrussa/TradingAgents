@@ -13,6 +13,7 @@ from tradingagents.agents.utils.fundamental_data_tools import (
     get_cashflow,
     get_income_statement,
     get_crypto_info,
+    get_b3_stock_info,
 )
 from tradingagents.agents.utils.news_data_tools import (
     get_news,
@@ -45,6 +46,15 @@ def build_instrument_context(ticker: str) -> str:
             "Use this exact ticker in every tool call, report, and recommendation. "
             "This asset trades 24/7 with no market hours, no circuit breakers, and "
             "no traditional equity fundamentals (P/E, EPS, dividends do not apply)."
+        )
+    if asset_type == "b3":
+        return (
+            f"The instrument to analyze is `{ticker}` (Brazilian stock, B3 exchange). "
+            "Use this exact ticker (with .SA suffix) in every tool call, report, and recommendation. "
+            "This asset is listed on B3 (Brasil, Bolsa, Balcão), regulated by CVM, and trades in BRL. "
+            "Market hours: 10:00–17:00 BRT (UTC-3), Mon–Fri. Benchmark: Ibovespa (IBOV). "
+            "Financial reports are filed as ITR (quarterly) and DFP (annual) with CVM. "
+            "Dividend distributions may include Juros sobre Capital Próprio (JCP)."
         )
     return (
         f"The instrument to analyze is `{ticker}`. "

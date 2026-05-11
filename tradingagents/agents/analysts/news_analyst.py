@@ -30,6 +30,19 @@ def create_news_analyst(llm):
                 "and community/social sentiment shifts. Explicitly note any news that could trigger "
                 "outsized price moves given the 24/7 nature and higher volatility of crypto markets."
             )
+        elif asset_type == "b3":
+            crypto_note = (
+                " Since this is a Brazilian stock (B3), pay special attention to: "
+                "CVM (Comissão de Valores Mobiliários) regulatory filings and enforcement actions, "
+                "company disclosures via ITR (quarterly) and DFP (annual) reports, "
+                "Brazilian macroeconomic events (SELIC rate decisions by COPOM, IPCA inflation, GDP data), "
+                "political risk (government policy changes, tax reform, regulatory shifts in Brazil), "
+                "Ibovespa rebalancing events and foreign investor flows into Brazil (BRL/USD impact), "
+                "sector-specific Brazilian news (e.g. Petrobras dividend policy, Vale iron ore prices, "
+                "agribusiness exports, energy sector regulation by ANEEL/ANP). "
+                "Search in both English and Portuguese when possible. "
+                "Note any CVM material fact (Fato Relevante) disclosures or investor relations (RI) announcements."
+            )
 
         system_message = (
             "You are a news researcher tasked with analyzing recent news and trends over the past week. Please write a comprehensive report of the current state of the world that is relevant for trading and macroeconomics. Use the available tools: get_news(query, start_date, end_date) for company-specific or targeted news searches, and get_global_news(curr_date, look_back_days, limit) for broader macroeconomic news. Provide specific, actionable insights with supporting evidence to help traders make informed decisions."

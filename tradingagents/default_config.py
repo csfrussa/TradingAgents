@@ -43,6 +43,7 @@ DEFAULT_CONFIG = {
         "fundamental_data": "yfinance",      # Options: alpha_vantage, yfinance
         "news_data": "yfinance",             # Options: alpha_vantage, yfinance
         "crypto_data": "crypto_yfinance",    # Crypto market data and tokenomics
+        "b3_data": "b3_yfinance",            # B3 (Brazilian) stock market data
     },
     # Tool-level configuration (takes precedence over category-level)
     "tool_vendors": {

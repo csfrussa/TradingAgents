@@ -2,6 +2,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from tradingagents.agents.utils.agent_utils import (
     build_instrument_context,
     get_balance_sheet,
+    get_b3_stock_info,
     get_cashflow,
     get_crypto_info,
     get_fundamentals,
@@ -30,6 +31,28 @@ def create_fundamentals_analyst(llm):
                 "Use the `get_crypto_info` tool to retrieve current market and tokenomics data. "
                 "Write a comprehensive report that helps traders assess the fundamental health, scarcity profile, and "
                 "risk characteristics of this crypto asset. "
+                "Make sure to append a Markdown table at the end organizing the key metrics."
+                + get_language_instruction()
+            )
+        elif asset_type == "b3":
+            tools = [get_b3_stock_info, get_fundamentals, get_balance_sheet, get_cashflow, get_income_statement]
+            system_message = (
+                "You are a Brazilian equities researcher tasked with analyzing the fundamental profile of a B3-listed stock. "
+                "This company is regulated by CVM (Comissão de Valores Mobiliários) and listed on B3 (Brasil, Bolsa, Balcão). "
+                "All financial figures are in BRL (Brazilian Real). "
+                "Use `get_b3_stock_info` first to retrieve key market and valuation metrics. "
+                "Then use `get_fundamentals`, `get_balance_sheet`, `get_cashflow`, and `get_income_statement` for detailed financials. "
+                "In your analysis, address the following B3-specific context: "
+                "(1) Share class: ON (3) = ordinary/voting, PN (4) = preferred/higher liquidity, Unit (11) = bundled ON+PN, "
+                "FII (11) = real estate trust — dividend yield (DY) and P/VP are primary FII metrics. "
+                "(2) Dividend policy: Brazilian companies may distribute earnings via Juros sobre Capital Próprio (JCP), "
+                "which is tax-deductible for the company and taxed at 15% for the investor, vs. standard dividends (tax-exempt for individual investors). "
+                "Total yield = dividends + JCP. Minimum mandatory payout is 25% of adjusted net income. "
+                "(3) Valuation multiples: P/L (P/E), P/VP (P/B), EV/EBITDA — compare vs. Brazilian sector peers, not US benchmarks. "
+                "(4) SELIC impact: Brazil's benchmark interest rate (SELIC) is the primary cost of capital driver. "
+                "High SELIC compresses P/L multiples and makes fixed income more competitive vs. equities. "
+                "(5) Regulatory filings: ITR (quarterly) and DFP (annual) filed with CVM. "
+                "Write a comprehensive report with specific, actionable insights. "
                 "Make sure to append a Markdown table at the end organizing the key metrics."
                 + get_language_instruction()
             )

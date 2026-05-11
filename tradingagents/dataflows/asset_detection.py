@@ -1,3 +1,5 @@
+import re
+
 KNOWN_CRYPTO_SYMBOLS = {
     "BTC", "ETH", "BNB", "SOL", "XRP", "ADA", "DOGE", "AVAX", "DOT", "MATIC",
     "LINK", "UNI", "LTC", "BCH", "XLM", "ATOM", "ALGO", "VET", "ICP", "FIL",
@@ -13,9 +15,10 @@ CRYPTO_QUOTE_CURRENCIES = {"USD", "USDT", "USDC", "BTC", "ETH", "BNB", "EUR", "G
 
 
 def detect_asset_type(ticker: str) -> str:
-    """Return 'crypto' or 'stock' for the given ticker.
+    """Return 'crypto', 'b3', or 'stock' for the given ticker.
 
     Handles YFinance format (BTC-USD), slash format (BTC/USD), and bare symbols (BTC).
+    B3 tickers follow the pattern: 4 uppercase letters + 1-2 digits (e.g. PETR4, VALE3, KNRI11).
     """
     ticker = ticker.upper().strip()
 
@@ -27,6 +30,12 @@ def detect_asset_type(ticker: str) -> str:
         return "crypto"
     if parts[0] in KNOWN_CRYPTO_SYMBOLS:
         return "crypto"
+
+    # B3: 4 uppercase letters + 1-2 digits, optionally followed by .SA
+    base = ticker.removesuffix(".SA")
+    if re.match(r'^[A-Z]{4}\d{1,2}$', base):
+        return "b3"
+
     return "stock"
 
 
@@ -54,4 +63,17 @@ def normalize_crypto_ticker(ticker: str) -> str:
     if ticker in KNOWN_CRYPTO_SYMBOLS:
         return f"{ticker}-USD"
 
+    return ticker
+
+
+def normalize_b3_ticker(ticker: str) -> str:
+    """Normalize a B3 ticker to YFinance format (append .SA if missing).
+
+    PETR4   → PETR4.SA
+    VALE3.SA → VALE3.SA  (already normalized)
+    KNRI11  → KNRI11.SA
+    """
+    ticker = ticker.strip().upper()
+    if not ticker.endswith(".SA"):
+        return f"{ticker}.SA"
     return ticker

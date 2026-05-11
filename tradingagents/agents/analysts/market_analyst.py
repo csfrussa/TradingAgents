@@ -31,6 +31,18 @@ def create_market_analyst(llm):
                 "- Bollinger Band squeezes and breakouts are common precursors to large moves.\n"
                 "Factor these differences explicitly into your analysis and recommendations."
             )
+        elif asset_type == "b3":
+            crypto_note = (
+                "\n\nIMPORTANT — This is a BRAZILIAN STOCK listed on B3 (Brasil, Bolsa, Balcão). Key context:\n"
+                "- Market hours: 10:00–17:00 BRT (UTC-3), Monday–Friday. Pre-market (9:00–10:00) exists but has low liquidity.\n"
+                "- Benchmark index: Ibovespa (IBOV). Compare performance against IBOV, not S&P 500 or Nasdaq.\n"
+                "- The USD/BRL exchange rate is a major macro factor: BRL depreciation can drive foreign outflows even if the company fundamentals are strong.\n"
+                "- The SELIC interest rate (Brazil's policy rate) directly affects required returns: high SELIC compresses P/L multiples.\n"
+                "- Volume and liquidity can be lower than US equivalents; ATR-based stops may need wider buffers.\n"
+                "- Share type matters: ON (3) has voting rights but lower liquidity; PN (4) is typically more liquid.\n"
+                "- FIIs (ending in 11) are Real Estate Investment Trusts — use dividend yield (DY) and P/VP as primary metrics.\n"
+                "Factor these differences explicitly into your technical analysis and indicator interpretation."
+            )
 
         system_message = (
             """You are a trading assistant tasked with analyzing financial markets. Your role is to select the **most relevant indicators** for a given market condition or trading strategy from the following list. The goal is to choose up to **8 indicators** that provide complementary insights without redundancy. Categories and each category's indicators are:

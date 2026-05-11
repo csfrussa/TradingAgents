@@ -2,6 +2,26 @@ from langchain_core.tools import tool
 from typing import Annotated
 from tradingagents.dataflows.interface import route_to_vendor
 from tradingagents.dataflows.crypto_yfinance import get_crypto_info as _get_crypto_info_impl
+from tradingagents.dataflows.b3_yfinance import get_b3_stock_info as _get_b3_stock_info_impl
+
+
+@tool
+def get_b3_stock_info(
+    symbol: Annotated[str, "B3 ticker in YFinance format, e.g. PETR4.SA, VALE3.SA, KNRI11.SA"],
+    curr_date: Annotated[str, "current date YYYY-MM-DD"] = None,
+) -> str:
+    """
+    Retrieve fundamental and market data for a Brazilian stock listed on B3.
+    Returns BRL-denominated metrics including P/L (P/E), P/VP (P/B), DY (dividend yield),
+    EV/EBITDA, ROE, ROA, share class (ON/PN/Unit/FII/BDR), and CVM context.
+    Use this instead of get_fundamentals for B3 assets (asset_type == 'b3').
+    Args:
+        symbol (str): B3 ticker in YFinance format, e.g. PETR4.SA, VALE3.SA, KNRI11.SA
+        curr_date (str): Current date YYYY-MM-DD (optional)
+    Returns:
+        str: Formatted report with B3 market and fundamental data in BRL
+    """
+    return _get_b3_stock_info_impl(symbol, curr_date)
 
 
 @tool
