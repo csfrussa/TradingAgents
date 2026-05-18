@@ -101,21 +101,6 @@ MODEL_OPTIONS: ProviderModeOptions = {
             ("Custom model ID", "custom"),
         ],
     },
-    # Claude via subscription (uses Claude Code SDK — no API key needed)
-    "claude_subscription": {
-        "quick": [
-            ("Claude Sonnet 4.6 - Best balance (subscription)", "claude-sonnet-4-6"),
-            ("Claude Haiku 4.5 - Fastest (subscription)", "claude-haiku-4-5"),
-            ("Claude Sonnet 4.5 - Agents & coding (subscription)", "claude-sonnet-4-5"),
-            ("Default (plan default model)", "default"),
-        ],
-        "deep": [
-            ("Claude Opus 4.6 - Most intelligent (subscription)", "claude-opus-4-6"),
-            ("Claude Opus 4.5 - Max intelligence (subscription)", "claude-opus-4-5"),
-            ("Claude Sonnet 4.6 - Best balance (subscription)", "claude-sonnet-4-6"),
-            ("Default (plan default model)", "default"),
-        ],
-    },
     # OpenRouter: fetched dynamically. Azure: any deployed model name.
     "ollama": {
         "quick": [

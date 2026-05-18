@@ -50,8 +50,4 @@ def create_llm_client(
         from .azure_client import AzureOpenAIClient
         return AzureOpenAIClient(model, base_url, **kwargs)
 
-    if provider_lower == "claude_subscription":
-        from .claude_subscription_client import ClaudeSubscriptionClient
-        return ClaudeSubscriptionClient(model, base_url, **kwargs)
-
     raise ValueError(f"Unsupported LLM provider: {provider}")
