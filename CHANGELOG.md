@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Breaking changes within the 0.x line are called out explicitly.
 
+## [0.2.5] — 2026-05-18
+
+### Added
+
+- **Claude.ai agent prompts** — 14 standalone Markdown files under `claude_agents/`
+  ready to install as a Claude.ai Project (no API key, no server required). Includes
+  an orchestrator that runs the full 9-stage pipeline (4 analysts → Bull/Bear debate →
+  Research Manager → Trader → Risk debate → Portfolio Manager) using Claude.ai's
+  built-in web search for real-time data. Each agent is also usable as an independent
+  Project for focused analysis. Supports stocks (global and B3), crypto, and custom
+  commands (`análise rápida`, `só técnica`, `só notícias`, etc.).
+- **`CLAUDE.md`** — codebase documentation for Claude Code with commands, architecture
+  overview, data-routing model, and extension guides for new vendors and providers.
+- **B3 (Brazilian stock) analysis support** — asset-type detection, `.SA` ticker
+  normalisation, and B3-specific context (SELIC, Ibovespa benchmark, CVM filings,
+  JCP dividends, ON/PN/FII share classes) injected into all analyst prompts. (#B3)
+- **Cryptocurrency analysis support** — asset-type-aware pipeline with crypto-specific
+  context (24/7 markets, tokenomics, on-chain metrics, wider RSI bands) across all
+  analyst agents. (#crypto)
+- **DeepSeek V4 thinking-mode** — round-trip via `DeepSeekChatOpenAI` subclass.
+
+### Removed
+
+- **`claude_subscription` provider** — removed `ClaudeSubscriptionClient` and all
+  references (factory, model catalog, CLI menu). Claude.ai does not permit this
+  integration pattern; use the `claude_agents/` prompts instead for subscription-based
+  access.
+
+### Fixed
+
+- `claude_subscription` client: catch `ProcessError` and retry on rate limit (backported
+  before removal).
+- Ticker path-traversal: validate ticker before using as a filesystem path component.
+
 ## [0.2.4] — 2026-04-25
 
 ### Added
